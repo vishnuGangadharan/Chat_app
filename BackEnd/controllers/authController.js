@@ -5,8 +5,13 @@ import generateAndsetCookie from "../utils/generateJWT.js"
 
 export const signup= async(req,res)=>{
 try {
-    let {fullName,userName,password,consfirmPassword,gender} = req.body
-     if(password!==consfirmPassword){
+    let {fullName,userName,password,confirmPassword,gender} = req.body
+    //console.log(req.body);
+   // password = password.trim();
+    //confirmPassword = confirmPassword.trim();
+
+console.log(password===confirmPassword);
+     if(password!=confirmPassword){
         return res.status(400).json({error:"password not matched"})
      }
 const user = await User.findOne({userName})
@@ -53,14 +58,18 @@ res.status(201).json({
 
 export const login=async(req,res)=>{
     try {
-        const {userName,password} = req.body;
-        console.log(userName,password);
-        const user = await User.findOne({userName})
-      
+        console.log("here");
+        const {username,password} = req.body;
+        console.log("ddddddd",req.body);
+        console.log(username,password);
+        const user = await User.findOne({userName:username})
+        if (!user) {
+            return res.status(400).json({ error: "Invalid Username" });
+        }
+        console.log("ffffffffff",user);
         const isCorrectPassword = await bcrypt.compare(password, user.password || "");
-        
         if(!isCorrectPassword || !user){
-            return res.status(400).json({error:"Invalid Password or UserName"})
+            return res.status(400).json({error:"Invalid Password or Username"})
         }
             generateAndsetCookie(user._id,res)
             res.status(201).json({
@@ -79,6 +88,7 @@ export const login=async(req,res)=>{
 
 export const logout = (req,res)=>{
     try {
+        console.log("here");
         res.cookie("jwt","",{ maxAge:0});
         res.status(200).json({message:"Logout successfully"})
         
